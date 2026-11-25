@@ -1,4 +1,4 @@
-# Deeface build script (v1.4)
+# Deeface build script (v1.6)
 #   powershell -ExecutionPolicy Bypass -File build.ps1
 #
 # Produces, in ..\release:
