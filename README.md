@@ -4,7 +4,7 @@
 
 > **English summary** — Offline Windows desktop app that finds an employee ID from a face photo by
 > comparing it with a folder of employee photos whose file names are the IDs (`10234.jpg` → `10234`).
-> Runs on ONNX Runtime (no TensorFlow, no GPU needed). Default models: InsightFace **Buffalo_L**
+> Runs on ONNX Runtime (no TensorFlow, no GPU needed). Recommended setup: **ArcFace**
 > recognition + **YuNet** detector. Embeddings are cached in SQLite so only new photos are analysed.
 > Thai/English UI, light/dark theme. Build a portable exe or an installer with `source\build.ps1`.
 
@@ -33,7 +33,7 @@
         │                               │
    หาตำแหน่งหน้า (YuNet)           หาตำแหน่งหน้า (YuNet, ความละเอียดเต็ม)
         │                               │
-   แปลงหน้าเป็นเวกเตอร์ (Buffalo_L)  แปลงหน้าเป็นเวกเตอร์
+   แปลงหน้าเป็นเวกเตอร์ (ArcFace)    แปลงหน้าเป็นเวกเตอร์
         │                               │
    เก็บในแคช SQLite ─────────► เทียบความเหมือน (cosine) ──► 5 อันดับแรก + %
 ```
@@ -67,7 +67,7 @@
    - กด **คัดลอกรหัส** เพื่อนำรหัสไปใช้ต่อ
 5. มุมขวาบนสลับ **สว่าง/มืด** และ **ไทย/EN** ได้
 
-> % เป็นค่าความคล้ายที่โมเดลคำนวณ ไม่ใช่ความน่าจะเป็น สำหรับ Buffalo_L ถ้าเป็นคนเดียวกันมักได้ประมาณ 50–70% ส่วนคนอื่นอยู่ราว 25–40% **ควรตรวจสอบด้วยตาอีกครั้งก่อนนำผลไปใช้**
+> % เป็นค่าความคล้ายที่โมเดลคำนวณ ไม่ใช่ความน่าจะเป็น แต่ละโมเดลให้ช่วงตัวเลขต่างกัน ให้ดูจากระยะห่างระหว่างอันดับ 1 กับอันดับถัดไปประกอบ **ควรตรวจสอบด้วยตาอีกครั้งก่อนนำผลไปใช้**
 
 ---
 
@@ -103,7 +103,7 @@ python main.py
 ใช้ตรวจว่าโปรแกรมหรือ exe ที่บิลด์แล้วทำงานได้ ผลลัพธ์จะเขียนลง `Deeface.log` (exit code 0 = พบผลลัพธ์)
 
 ```powershell
-python main.py --selftest "D:\photos" "C:\target.jpg" Buffalo_L yunet
+python main.py --selftest "D:\photos" "C:\target.jpg" ArcFace yunet
 ```
 
 กับไฟล์ exe ใช้รูปแบบเดียวกัน: `Deeface.exe --selftest <โฟลเดอร์รูป> <รูปที่ค้นหา> [โมเดล] [ตัวหาหน้า]`
@@ -118,9 +118,7 @@ python main.py --selftest "D:\photos" "C:\target.jpg" Buffalo_L yunet
 models_onnx\
 └── .deepface\
     └── weights\
-        ├── buffalo_l\
-        │   └── webface_r50.onnx                  (166 MB)  ← ค่าเริ่มต้น
-        ├── face_detection_yunet_2023mar.onnx      (0.2 MB)  ← ค่าเริ่มต้น
+        ├── face_detection_yunet_2023mar.onnx      (0.2 MB)
         ├── arcface_weights.onnx                   (130 MB)
         ├── facenet512_weights.onnx                ( 90 MB)
         ├── vgg_face_weights.onnx                  (512 MB)
@@ -130,12 +128,11 @@ models_onnx\
 
 | ไฟล์ | แหล่งดาวน์โหลด |
 |---|---|
-| `buffalo_l\webface_r50.onnx` | `buffalo_l.zip` จาก [InsightFace releases v0.7](https://github.com/deepinsight/insightface/releases/tag/v0.7) แตกไฟล์แล้วเอา **`w600k_r50.onnx`** มาเปลี่ยนชื่อเป็น `webface_r50.onnx` |
 | `face_detection_yunet_2023mar.onnx` | [opencv_zoo / face_detection_yunet](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet) |
 | `arcface_weights.onnx`, `facenet512_weights.onnx`, `vgg_face_weights.onnx` | [serengil/deepface_models releases v1.0](https://github.com/serengil/deepface_models/releases/tag/v1.0) |
 | `haarcascade_*.xml` | [opencv/data/haarcascades](https://github.com/opencv/opencv/tree/4.x/data/haarcascades) |
 
-ถ้าใช้แค่ค่าเริ่มต้น ต้องมีอย่างน้อย `buffalo_l\webface_r50.onnx` กับ `face_detection_yunet_2023mar.onnx` แต่ `build.ps1` จะตรวจว่ามีครบทุกไฟล์ก่อนบิลด์
+ถ้าจะใช้ ArcFace + YuNet ต้องมีอย่างน้อย `arcface_weights.onnx` กับ `face_detection_yunet_2023mar.onnx`
 
 ---
 
@@ -175,9 +172,7 @@ powershell -ExecutionPolicy Bypass -File source\build.ps1
 
 | ชุด | หาถูกอันดับ 1 | เวลาต่อรูป | หมายเหตุ |
 |---|---|---|---|
-| **Buffalo_L + YuNet** | **97.3%** | 86 ms | ค่าเริ่มต้น |
-| Buffalo_L + OpenCV | 97.3% | 110 ms | |
-| ArcFace + YuNet | 88.3% | 51 ms | |
+| **ArcFace + YuNet** | **88.3%** | 51 ms | แนะนำ |
 | ArcFace + OpenCV | 86.7% | 74 ms | ชุดเดิมของ v1.x |
 | Facenet512 / VGG-Face | — | — | มีให้เลือกเพื่อใช้กับแคชเดิม |
 
@@ -227,5 +222,5 @@ Deeface\
 | แถบ "โมเดล" เป็นสีแดง / ขึ้นว่าต้องดาวน์โหลด | ไม่มีโฟลเดอร์ `models\` ข้างโปรแกรม ให้คัดลอกโฟลเดอร์ `models` มาวาง |
 | "ไม่พบใบหน้าในรูปที่ค้นหา" | ใช้รูปที่เห็นหน้าชัด หันหน้าตรง ไม่มืดเกินไป |
 | ค้นหาครั้งแรกนานมาก | ปกติ ระบบต้องวิเคราะห์ทุกรูปครั้งแรก กด "หยุด" ได้ ผลที่ทำไปแล้วถูกบันทึกไว้ |
-| ผลลัพธ์ดูไม่ถูกต้อง | ใช้ Buffalo_L + YuNet และใช้รูปที่หน้าชัด ถ้ารูปในฐานข้อมูลมีปัญหา ให้ลองกด "ล้างแคช" |
+| ผลลัพธ์ดูไม่ถูกต้อง | ใช้ตัวหาหน้า YuNet และใช้รูปที่หน้าชัด ถ้ารูปในฐานข้อมูลมีปัญหา ให้ลองกด "ล้างแคช" |
 | โปรแกรมปิดเองหรือค้าง | ดูไฟล์ `Deeface.log` (ข้าง exe หรือที่ `%LOCALAPPDATA%\Deeface\`) |
