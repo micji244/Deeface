@@ -1,0 +1,10 @@
+# Deeface — runtime + build dependencies (Python 3.13)
+# v1.4 runs the face models on ONNX Runtime; TensorFlow is NOT needed any more
+# (it may stay installed on the build PC — Deeface.spec excludes it).
+deepface==0.0.104
+onnxruntime
+opencv-python-headless
+customtkinter
+numpy
+pillow
+pyinstaller

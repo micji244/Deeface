@@ -1,0 +1,18 @@
+# Whitelist: ignore everything, then allow only source code and docs.
+# Never commit employee photos, face caches, logs, settings, exe or models.
+/*
+!/.gitignore
+!/README-TH.md
+!/ARCHITECTURE-TH.md
+!/source/
+
+/source/*
+!/source/main.py
+!/source/face_search_core.py
+!/source/ui_theme.py
+!/source/Deeface.spec
+!/source/build.ps1
+!/source/installer.iss
+!/source/requirements.txt
+!/source/version_info.txt
+!/source/deeface.ico
